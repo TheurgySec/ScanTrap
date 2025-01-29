@@ -101,24 +101,33 @@ function Start-WebServer {
     $listener = New-Object System.Net.HttpListener
     $listener.Prefixes.Add("http://*:$Port/")
     $listener.Start()
-    Write-Host "Listening on port $Port..."
-    
-    while ($true) {
-        $context = $listener.GetContext()
-        $clientIp = $context.Request.RemoteEndPoint.Address.ToString()
-        Write-Host "Connection received from: $clientIp"
-        
-        $connections = Get-NetTCPConnection | Where-Object { $_.RemoteAddress -eq $clientIp }
-        foreach ($conn in $connections) {
-            $proc = Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue
-            if ($proc) {
-                Write-Host "Suspending process: $($proc.ProcessName) ($proc.Id)"
-                Suspend-ProcessById -processId $proc.Id
+    Write-Host "Listening on port $Port... (Press Ctrl+C to stop)"
+
+    try {
+        while ($true) {
+            if ($listener.IsListening -eq $false) { break }
+            $context = $listener.GetContext()
+            $clientIp = $context.Request.RemoteEndPoint.Address.ToString()
+            Write-Host "Connection received from: $clientIp"
+
+            $connections = Get-NetTCPConnection | Where-Object { $_.RemoteAddress -eq $clientIp -and $_.RemotePort -eq $Port}
+            foreach ($conn in $connections) {
+                $proc = Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue
+                if ($proc) {
+                    Write-Host "Suspending process: $($proc.ProcessName) ($proc.Id)"
+                    Suspend-ProcessById -processId $proc.Id
+                }
             }
+            $context.Response.Close()
         }
-        $context.Response.Close()
+    } catch {
+        Write-Host "`nStopping web server..."
+    } finally {
+        $listener.Stop()
+        $listener.Close()
     }
 }
+
 
 if (-not (Test-Administrator)) {
     Write-Error "This script must be executed as Administrator."
