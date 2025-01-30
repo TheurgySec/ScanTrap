@@ -2,10 +2,10 @@ param(
     [string]$yarafile,
     [switch]$SuspendProcess,
     [switch]$Loop,
-    [switch]$MonitorProcess,  # New: Monitor process by name
-    [string]$ProcessName,     # New: Process name to suspend on detection
-    [switch]$WebServer,       # New: Run local web server to detect connections
-    [int]$Port = 80,          # New: Default to port 80 but allow custom port
+    [switch]$MonitorProcess,  # Monitor process by name
+    [string]$ProcessName,     # Process name to suspend on detection
+    [switch]$WebServer,       # Run local web server to detect connections
+    [int]$Port = 80,          # Default to port 80 but allow custom port
     [string]$yarabin = "yara-4.4.0-rc1-2176-win64\yara64.exe"
 )
 
@@ -89,7 +89,7 @@ function ScanProcesses {
 function Start-WebServer {
     param(
         [int]$Port = 80,
-        #[bool]$SuspendProcess = $false,
+        [bool]$SuspendProcess = $false,
         [string]$ConfigFile = "Responses.json"
     )
 
@@ -187,7 +187,7 @@ if (-not (Test-Administrator)) {
 }
 
 if ($WebServer) {
-    Start-WebServer
+    Start-WebServer -Port $Port -SuspendProcess $SuspendProcess
 } elseif ($MonitorProcess -and $ProcessName) {
     MonitorForProcess
 } elseif ($yarafile) {
