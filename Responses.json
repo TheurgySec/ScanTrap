@@ -1,0 +1,14 @@
+{
+    "/": {
+        "GET": "<html><body><h1>Welcome to ScanTrap</h1><p>This is the default page.</p></body></html>"
+    },
+    "/status": {
+        "GET": "<html><body><h1>Server Status</h1><p>Running on port {{port}}</p></body></html>"
+    },
+    "/admin": {
+        "GET": "<html><body><h1>Admin Panel</h1><p>Restricted Access.</p></body></html>"
+    },
+    "/submit": {
+        "POST": "<html><body><h1>Data Received</h1><p>Your data: {{body}}</p></body></html>"
+    }
+}
